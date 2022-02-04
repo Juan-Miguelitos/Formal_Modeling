@@ -5,7 +5,7 @@ import fileReader.model.KripkeStructure;
 
 public class Main {
 	public static void main(String[] args) {
-		String[] content = FileReader.readFile("src/fileReader/data/ctl.txt");
+		String[] content = FileReader.readFile("src/fileReader/data/ctl3.txt");
 		
 		if(content == null) {
 			System.out.println("No file");
