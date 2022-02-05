@@ -3,14 +3,15 @@ package fileReader.model;
 import java.util.ArrayList;
 
 public class Formula {
-	/* Arguments */
+	/** Class Arguments **/
 	private String rawFormula;
 	private String component = "";
 	private ArrayList<Formula> subFormulas = new ArrayList<Formula>();
+	// Note: subFormulas size => component = state/transition(1), QT(2), Logical operator(3)
 	
 	/* Utility */
 	private char[] operators = {
-			// Path Quantifier operator (T)
+			// Path Quantifier operator (Q)
 			'A', // For all
 			'E', // There exist
 			
@@ -21,7 +22,7 @@ public class Formula {
 	};
 	
 	
-	/* Constructor */
+	/** Constructor **/
 	public Formula(String formula) throws Exception {
 		if (formula.length() == 0 && formula != "")
 			throw new Exception("No formula");
@@ -53,6 +54,7 @@ public class Formula {
 		return foundOperator;
 	}
 	
+	/* Check if there is an operator at the beginning of the formula */
 	private boolean checkOperator() {
 		for (int i = 0; i < this.operators.length; i++)
 			if (this.rawFormula.charAt(0) == this.operators[i]) {
@@ -65,7 +67,6 @@ public class Formula {
 		
 		return false;
 	}
-	
 	
 	/* Decompose the formula if composed with parenthesis */
 	private boolean decomposeParenthesis() throws Exception {
@@ -84,7 +85,6 @@ public class Formula {
 		
 		return false;
 	}
-	
 	private boolean checkParenthesis() throws Exception {
 		// Check if there is a parenthesis
 		if (this.rawFormula.charAt(0) != '(')
@@ -106,7 +106,6 @@ public class Formula {
 		
 		return true;
 	}
-	
 	private int getClosingParenthesisIndex(String formula) throws Exception {
 		if (formula.charAt(0) != '(')
 			throw new Exception("1st index is not a parenthesis");
@@ -128,21 +127,21 @@ public class Formula {
 	}
 	
 	
-	/* Serialize */
+	/** Serialize **/
 	@Override
 	public String toString() {
 		String serialized = "";
 		
-		if (this.subFormulas.size() == 2) {
+		if (this.subFormulas.size() == 2) { // Formula = Logical operator
 			serialized += "(" + this.subFormulas.get(0).toString() + ")";
 			serialized += this.component;
 			serialized += "(" + this.subFormulas.get(1).toString() + ")";
 		} 
-		else if (this.subFormulas.size() == 1) {
+		else if (this.subFormulas.size() == 1) { // Formula = QT
 			serialized += this.component;
 			serialized += "(" + this.subFormulas.get(0).toString() + ")";
 		}
-		else
+		else // Formula = state/transition
 			serialized += this.component;
 		
 		return serialized;

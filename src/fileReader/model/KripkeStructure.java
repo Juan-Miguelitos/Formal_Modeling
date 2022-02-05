@@ -3,12 +3,12 @@ package fileReader.model;
 import java.util.ArrayList;
 
 public class KripkeStructure {
-	// Classe's Arguments
+	/** Class Arguments **/
 	private State[] states;
-	private String initialState;
+	private State initialState;
 	
 	
-	// Constructor
+	/** Constructor **/
 	public KripkeStructure (String[] fileContent) throws Exception {
 		if (fileContent.length > 4 || fileContent.length == 0)
 			throw new Exception("Kripke Structure is not valid");
@@ -29,17 +29,25 @@ public class KripkeStructure {
 		
 		this.states = formatState(states, transitions, labels);
 		
-		this.initialState = fileContent[1].replace("{", "").replace("}", "");
+		// Initializing transitions of each state and find initial state
+		for (int i = 0; i < this.states.length; i++) {
+			initTransitions(this.states[i]);
+			if (this.states[i].getName().equals(fileContent[1].replace("{", "").replace("}", "")))
+				this.initialState = this.states[i];
+		}
+		
+		//this.initialState = fileContent[1].replace("{", "").replace("}", "");
 	}
 	
 	
-	// Format each state with its corresponding transitions and labels
+	/* Format each state with its corresponding transitions and labels */
 	private State[] formatState(String[] states, String[] transitions, String[] labels) throws Exception {
 		ArrayList<State> formatedStates = new ArrayList<State>();
 		
 		// Formating each state
 		for (int i = 0; i < states.length; i++)
 			formatedStates.add(new State(states[i], findLabels(states[i], labels), findTransitions(states[i], transitions)));
+			
 		
 		if (formatedStates.size() == 0)
 			throw new Exception("No states on the Kripke structure");
@@ -52,12 +60,12 @@ public class KripkeStructure {
 	}
 	
 	
-	// Find and format the transitions related to a state name
+	/* Find and format the transitions related to a state name */
 	private Transition[] findTransitions(String state, String[] transitions) {
 		ArrayList<String> transitionsFound = new ArrayList<String>();
 		ArrayList<Transition> formatedTransitions = new ArrayList<Transition>();
 		
-		// Finding transitions related to the state
+		// Finding transitions related to the state 
 		for (int i = 0; i < transitions.length; i++)
 			if (transitions[i].split(",")[0].equals(state))
 				transitionsFound.add(transitions[i]);
@@ -88,8 +96,15 @@ public class KripkeStructure {
 		return transitionsArray;
 	}
 	
+	/* Initialize all the transitions of a state */
+	public void initTransitions(State s) {			
+		Transition[] transitions = s.getTransitions();
+		
+		for (int i = 0; i < transitions.length; i++)
+			transitions[i].initArgs(this.states);
+	}
 	
-	// Find the labels related to a state name
+	/* Find the labels related to a state name */
 	private String[] findLabels(String state, String[] labels) {
 		ArrayList<String> labelsFound = new ArrayList<String>();
 		String[] splittedLabel = {};
@@ -116,27 +131,26 @@ public class KripkeStructure {
 	}
 	
 	
-	// Serialize
+	/** Serialize **/
 	@Override
 	public String toString() {
-		String serialized = "Kripke Structure :\n\n";
+		String serialized = "Kripke Structure :\n";
 		
 		if (this.states == null || this.states.length == 0)
 			return "Empty Kripke Structure\n";
 		
+		serialized += "Initial state: " + this.initialState.getName() + "\n\n";
 		for (int i = 0; i < states.length; i++)
-			serialized += this.states[i].toString() + "\n";
+			serialized += this.states[i] + "\n";
 		
 		return serialized;
 	}
 	
-	
-	/* Getters */
+	/** Getters **/
 	public State[] getStates() {
 		return states;
 	}
-	
-	public String getInitialState() {
+	public State getInitialState() {
 		return initialState;
 	}
 	

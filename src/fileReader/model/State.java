@@ -1,21 +1,24 @@
 package fileReader.model;
 
 public class State {
-	// Classe's Arguments
+	/** Class Arguments**/
 	private String name;
 	private String[] labels;
 	private Transition[] transitions;
 	
 	
-	// Constructor
+	/** Constructors **/
 	public State(String name, String[] labels, Transition[] transitions) {
 		this.name = name;
 		this.labels = labels;
 		this.transitions = transitions;
 	}
-
+	public State(String name) {
+		this.name = name;
+	}
 	
-	// Serialize
+	
+	/** Serialize **/
 	@Override
 	public String toString() {
 		String serialized = "State : " + this.name + "\n";
@@ -30,7 +33,7 @@ public class State {
 		serialized += "\nTransitions : \n";
 		if (this.transitions != null && this.transitions.length != 0)
 			for (int i = 0; i < transitions.length; i++) {
-				serialized += this.transitions[i].getToState();
+				serialized += this.transitions[i].getNextState().getName();
 				
 				if (this.transitions[i].getValue() != null)
 					serialized += " : " + this.transitions[i].getValue();
@@ -43,16 +46,13 @@ public class State {
 		return serialized;
 	}
 	
-	
-	/* Getters */
+	/** Getters **/
 	public String getName() {
 		return name;
 	}
-
 	public String[] getLabels() {
 		return labels;
 	}
-
 	public Transition[] getTransitions() {
 		return transitions;
 	}
