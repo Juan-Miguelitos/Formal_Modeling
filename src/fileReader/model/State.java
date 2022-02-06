@@ -1,10 +1,13 @@
 package fileReader.model;
 
+import java.util.ArrayList;
+
 public class State {
 	/** Class Arguments**/
 	private String name;
-	private String[] labels;
-	private Transition[] transitions;
+	private String[] labels = null;
+	private Transition[] transitions = null;
+	private State[] previousStates = {};
 	
 	
 	/** Constructors **/
@@ -15,6 +18,22 @@ public class State {
 	}
 	public State(String name) {
 		this.name = name;
+	}
+	
+	
+	/**/
+	public void initArgs(State[] states, String[] transitions) {
+		ArrayList<State> previousStates = new ArrayList<State>();
+		
+		for (String transition : transitions)
+			if (transition.split(",")[1].equals(this.name))
+				for (State state : states)
+					if (transition.split(",")[0].equals(state.getName())) {
+						previousStates.add(state);
+						break;
+					}
+		
+		this.previousStates = previousStates.toArray(this.previousStates);
 	}
 	
 	
@@ -30,16 +49,16 @@ public class State {
 		else
 			serialized += "None";
 		
+		if (this.previousStates.length != 0) {
+			serialized += "\nPrevious : ";
+			for (State state : this.previousStates)
+				serialized += state.getName() + " ";
+		}
+		
 		serialized += "\nTransitions : \n";
 		if (this.transitions != null && this.transitions.length != 0)
-			for (int i = 0; i < transitions.length; i++) {
-				serialized += this.transitions[i].getNextState().getName();
-				
-				if (this.transitions[i].getValue() != null)
-					serialized += " : " + this.transitions[i].getValue();
-				
-				serialized += "\n";
-			}
+			for (int i = 0; i < transitions.length; i++)
+				serialized += this.transitions[i].getNextState().getName() + "\n";
 		else
 			serialized += "None\n";
 		
@@ -55,5 +74,8 @@ public class State {
 	}
 	public Transition[] getTransitions() {
 		return transitions;
+	}
+	public State[] getPreviousStates() {
+		return previousStates;
 	}
 }

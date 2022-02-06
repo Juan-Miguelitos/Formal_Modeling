@@ -28,6 +28,7 @@ public class KripkeStructure {
 			labels[i] = labels[i].replace("{", "").replace("}", "");
 		
 		this.states = formatState(states, transitions, labels);
+		initStates(transitions);
 		
 		// Initializing transitions of each state and find initial state
 		for (int i = 0; i < this.states.length; i++) {
@@ -58,7 +59,11 @@ public class KripkeStructure {
 		
 		return statesArray;
 	}
-	
+	/* Initialize all the state */
+	private void initStates(String[] transitions) {
+		for (State state : this.states)
+			state.initArgs(this.states, transitions);
+	}
 	
 	/* Find and format the transitions related to a state name */
 	private Transition[] findTransitions(String state, String[] transitions) {
@@ -81,12 +86,8 @@ public class KripkeStructure {
 		for (int i = 0; i < transitionsFound.size(); i++) {
 			fromState = transitionsFound.get(i).split(",")[0];
 			toState = transitionsFound.get(i).split(",")[1];
-			if (transitionsFound.get(i).split(",").length == 3)
-				value = transitionsFound.get(i).split(",")[2];
-			else
-				value = null;
 			
-			formatedTransitions.add(new Transition(fromState, toState, value));
+			formatedTransitions.add(new Transition(fromState, toState));
 		}
 		
 		// Converting ArrayList to Array
@@ -95,7 +96,6 @@ public class KripkeStructure {
 		
 		return transitionsArray;
 	}
-	
 	/* Initialize all the transitions of a state */
 	public void initTransitions(State s) {			
 		Transition[] transitions = s.getTransitions();

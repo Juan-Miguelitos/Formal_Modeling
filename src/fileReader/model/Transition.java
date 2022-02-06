@@ -2,16 +2,14 @@ package fileReader.model;
 
 public class Transition {
 	/** Class Arguments **/
-	private String value;
 	private State previousState;
 	private State nextState;
 	
 	
 	/** Constructor **/
-	public Transition(String fromState, String toState, String value) {
+	public Transition(String fromState, String toState) {
 		this.previousState = new State(fromState);
 		this.nextState = new State(toState);
-		this.value = value;
 	}
 	
 	
@@ -30,16 +28,11 @@ public class Transition {
 	public String toString() {
 		String serialized = "Origin : " + this.previousState.getName() + "\n";
 		serialized += "Destination : " + this.nextState.getName() + "\n";
-		if (this.value != null)
-			serialized += "Value : " + this.value + "\n";
 		
 		return serialized;
 	}
 	
 	/** Getters **/
-	public String getValue() {
-		return value;
-	}
 	public State getPreviousState() {
 		return previousState;
 	}

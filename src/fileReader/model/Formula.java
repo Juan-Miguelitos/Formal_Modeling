@@ -2,6 +2,8 @@ package fileReader.model;
 
 import java.util.ArrayList;
 
+import modelChecking.model.CTLChecker;
+
 public class Formula {
 	/** Class Arguments **/
 	private String rawFormula;
@@ -18,7 +20,10 @@ public class Formula {
 			// Linear-time operator (T)
 			'X', // Next
 			'G', // Globally (always in the future)
-			'F' // Future (in the future)
+			'F', // Future (in the future)
+			
+			// Logical operator
+			'!' // NOT
 	};
 	
 	
@@ -37,6 +42,49 @@ public class Formula {
 				this.component = this.rawFormula;
 	}
 	
+	
+	/* Run model checking */
+	public State[] modelChecking(State[] allStates) {
+		ArrayList<State[]> checked = new ArrayList<State[]>();
+		State[] result;
+		
+		if (subFormulas.size() > 0)
+			for (Formula formula : this.subFormulas)
+				checked.add(formula.modelChecking(allStates));
+		
+		switch (this.component) {
+		case "E":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkE(checked.get(0));
+			break;
+		case "EX":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkEX(checked.get(0));
+			break;
+		case "EG":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkEG(checked.get(0));
+			break;
+		case "EF":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkEF(checked.get(0));
+			break;
+			
+		case "A":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkA(checked.get(0), allStates);
+			break;
+		case "AX":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkAX(checked.get(0));
+			break;
+			
+		default:
+			result = CTLChecker.marking(component, allStates);
+			break;
+		}
+		return result;
+	}
 	
 	/* Decompose the formula if composed with operators */
 	private boolean decomposeOperators() throws Exception {
@@ -145,7 +193,6 @@ public class Formula {
 			serialized += this.component;
 		
 		return serialized;
-	}
-	// Serialize
+	}	// Serialize
 
 }
