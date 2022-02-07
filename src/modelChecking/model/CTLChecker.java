@@ -6,11 +6,11 @@ import java.util.Arrays;
 import fileReader.model.State;
 import fileReader.model.Transition;
 
-public class CTLChecker {
+public abstract class CTLChecker {
 	public static State[] goThroughPaths(State state, ArrayList<State> seenStates) {
 		return goThroughPathsChild(state, seenStates, true);
 	}
-	public static State[] goThroughPathsChild(State state, ArrayList<State> seenStates, boolean firstCall) {
+	private static State[] goThroughPathsChild(State state, ArrayList<State> seenStates, boolean firstCall) {
 		/*for (Transition t : state.getTransitions())
 			System.out.print(t);
 		System.out.println();*/
@@ -24,16 +24,20 @@ public class CTLChecker {
 			
 			return seenStatesArray;
 		}
-		seenStates.add(state);
+		if (!seenStates.contains(state))
+			seenStates.add(state);	
 		
 		ArrayList<State[]> paths = new ArrayList<State[]>();
 		State[] buffer;
 		
 		for (Transition transitions : state.getTransitions()) {
 			buffer = goThroughPathsChild(transitions.getNextState(), seenStates, false);
-			/*for (State b : buffer)
+			
+			/*System.out.println("******" + transitions.getNextState().getName());
+			for (State b : buffer)
 				System.out.print(b);
 			System.out.println();*/
+
 			if (buffer != null)
 				paths.add(buffer);
 		}
@@ -124,14 +128,13 @@ public class CTLChecker {
 	public static State[] checkEG(State[] phi) {
 		ArrayList<State> result = new ArrayList<State>();
 		State[] buffer;
-		ArrayList<State> phiList = arrayToList(phi);
+		ArrayList<State> phiList;
 		
 		for (State state : phi) {
+			phiList = arrayToList(phi);
 			buffer = goThroughPaths(state, phiList);
 			
-			if (buffer.length != 0 && buffer != null)
-				if (isPathValid(buffer, phiList))
-					result = unionStates(buffer, result);
+			result = unionStates(buffer, result);
 		}
 		
 		if (result.size() == 0)
@@ -146,11 +149,13 @@ public class CTLChecker {
 	/* Check Φ = EF(φ) */
 	public static State[] checkEF(State[] phi) {
 		ArrayList<State> validStates = new ArrayList<State>();
-		ArrayList<State> phiList = arrayToList(phi);
+		ArrayList<State> phiList;
 		
-		for (State state : phi)
+		for (State state : phi) {
+			phiList = arrayToList(phi);
 			if (goThroughPaths(state, phiList) != null)
 				validStates.add(state);
+		}
 		
 		if (validStates.size() == 0)
 			return null;
@@ -220,18 +225,21 @@ public class CTLChecker {
 	public static State[] checkAG(State[] phi) {
 		ArrayList<State> validStates = new ArrayList<State>();
 		ArrayList<State> validPaths = new ArrayList<State>();
+		ArrayList<State> phiList;
 		State[] buffer;
 		
 		for (State state : phi) {
-			buffer = goThroughPaths(state, (ArrayList<State>) Arrays.asList(phi));
+			phiList = arrayToList(phi);
+			buffer = goThroughPaths(state, phiList);
+			phiList = arrayToList(phi);
+			
 			if (buffer.length != 0 && buffer != null)
-				if (isPathValid(buffer, (ArrayList<State>) Arrays.asList(phi))) {
+				if (isPathValid(buffer, phiList)) {
 					validStates.add(state);
-					validPaths = unionStates(buffer, validPaths);
 				}
 		}
 		
-		if (validStates.size() == 0 || validStates.size() != phi.length)
+		if (validStates.size() == 0)
 			return null;
 		
 		State[] validStatesArray = {}, result = {};
@@ -245,12 +253,15 @@ public class CTLChecker {
 	/* Check Φ = AF(φ) */
 	public static State[] checkAF(State[] phi) {
 		ArrayList<State> validStates = new ArrayList<State>();
+		ArrayList<State> phiList;
 		State[] buffer;
 		
 		for (State state : phi) {
-			buffer = goThroughPaths(state, (ArrayList<State>) Arrays.asList(phi));
+			phiList = arrayToList(phi);
+			buffer = goThroughPaths(state, phiList);
+			phiList = arrayToList(phi);
 			if (buffer.length != 0 && buffer != null)
-				if (isPathValid(buffer, (ArrayList<State>) Arrays.asList(phi)))
+				if (isPathValid(buffer, phiList))
 					validStates.add(state);
 		}
 		
@@ -263,7 +274,81 @@ public class CTLChecker {
 		return validStatesArray;
 	}
 	
+	
+
+	/* Check Φ = !φ */
+	public static State[] checkNOT(State[] phi, State[] allStates) {
+		ArrayList<State> validStates = new ArrayList<State>();
+		ArrayList<State> allStatesList = arrayToList(allStates);
+		
+		for (State state : phi)
+			if (!allStatesList.contains(state))
+				validStates.add(state);
+		
+		State[] validStatesArray = {};
+		validStatesArray = validStates.toArray(validStatesArray);
+		
+		return validStatesArray;
+	}
+	
+	/* Check Φ = (φ1)|(φ2) */
+	public static State[] checkOR(State[] phi1, State[] phi2) {
+		ArrayList<State> result = unionStates(phi1, arrayToList(phi2));
+
+		State[] resultArray = {};
+		resultArray = result.toArray(resultArray);
+		
+		return resultArray;
+	}
+	
+	/* Check Φ = (φ1)&(φ2) */
+	public static State[] checkAND(State[] phi1, State[] phi2) {
+		ArrayList<State> validStates = new ArrayList<State>();
+		ArrayList<State> phiList = arrayToList(phi1);
+		
+		for (State state : phi2)
+			if (phiList.contains(state))
+				validStates.add(state);
+		
+		if (validStates.size() == 0)
+			return null;
+		
+		State[] validStatesArray = {};
+		validStatesArray = validStates.toArray(validStatesArray);
+		
+		return validStatesArray;
+		
+	}
+	
+	
+	/* Check Φ = (φ1)U(φ2) */
+	public static State[] checkU(State[] phi1, State[] phi2) {
+		ArrayList<State> validStates = new ArrayList<State>();
+		ArrayList<State> phiList;
+		State[] bufferPath;
+		
+		for (State state : phi1) {
+			phiList = arrayToList(phi2);
+			bufferPath = goThroughPaths(state, phiList);
+			phiList = arrayToList(phi2);
+			
+			for (State statePath : bufferPath)
+				if (phiList.contains(statePath)) {
+					validStates.add(state);
+					break;
+				}
+		}
+		
+		State[] validStatesArray = {};
+		validStatesArray = validStates.toArray(validStatesArray);
+		
+		return validStatesArray;
+	}
+	
 	private static boolean isPathValid(State[] path, ArrayList<State> phi) {
+		if (path.length != phi.size())
+			return false;
+		
 		for (State pathState : path) 
 			if (!phi.contains(pathState))
 				return false;
@@ -290,7 +375,7 @@ public class CTLChecker {
 	
 	private static ArrayList<State> arrayToList(State[] a) {
 		ArrayList<State> l = new ArrayList<State>();
-		
+		if (a == null) return null;
 		for (State s : a)
 			l.add(s);
 		

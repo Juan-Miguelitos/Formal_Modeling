@@ -78,6 +78,32 @@ public class Formula {
 			if (checked.size() != 1) return null;
 			result = CTLChecker.checkAX(checked.get(0));
 			break;
+		case "AG":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkAG(checked.get(0));
+			break;
+		case "AF":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkAF(checked.get(0));
+			break;
+			
+		case "!":
+			if (checked.size() != 1) return null;
+			result = CTLChecker.checkNOT(checked.get(0), allStates);
+			break;
+		case "|":
+			if (checked.size() != 2) return null;
+			result = CTLChecker.checkOR(checked.get(0), checked.get(1));
+			break;
+		case "&":
+			if (checked.size() != 2) return null;
+			result = CTLChecker.checkAND(checked.get(0), checked.get(1));
+			break;
+		
+		case "U":
+			if (checked.size() != 2) return null;
+			result = CTLChecker.checkU(checked.get(0), checked.get(1));
+			break;
 			
 		default:
 			result = CTLChecker.marking(component, allStates);
